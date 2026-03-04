@@ -4,6 +4,8 @@ import { InversifyExpressHttpAdapter } from '@inversifyjs/http-express';
 import { container } from './ioc/container.js';
 
 (async () => {
+
+    
 const expressApp = express();
 
 expressApp.use(cors());

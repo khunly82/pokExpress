@@ -10,7 +10,7 @@ import { OrderLineRepository } from "@/repositories/order-line.repository.js";
 import { TYPES } from "./types.js";
 import { AppDataSource } from "@/configs/database.js";
 import { TransactionMiddleware } from "@/middlewares/transaction.middleware.js";
-import { QueryRunnerContext } from "./query-runner-context.js";
+import { transactionStorage } from "./transaction-store.js";
 
 export const container = new Container();
 
@@ -19,13 +19,10 @@ container.bind(OrderController).toSelf().inRequestScope();
 container.bind(TransactionMiddleware).toSelf().inRequestScope();
 
 // queryRunner
-container.bind(QueryRunnerContext).toSelf().inSingletonScope();
 container.bind<QueryRunner>(TYPES.QueryRunner)
     .toDynamicValue((context) => {
-        const qrContext = context.get(QueryRunnerContext);
-        const qr = qrContext.getQueryRunner();
-        if (qr) return qr;
-        return AppDataSource.createQueryRunner();
+        const qr = transactionStorage.getStore();
+        return qr ?? AppDataSource.createQueryRunner();
     })
     .inRequestScope();
 

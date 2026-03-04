@@ -1,33 +1,28 @@
-import { TYPES } from "@/ioc/types";
-import { QueryRunnerContext } from "@/ioc/query-runner-context";
-import { injectable, inject } from "inversify";
-import { QueryRunner } from "typeorm";
+import { injectable } from "inversify";
+import { AppDataSource } from "@/configs/database";
+import { transactionStorage } from "@/ioc/transaction-store";
 
 @injectable()
 export class TransactionMiddleware {
-    constructor(
-        @inject(TYPES.QueryRunner) private readonly _qr: QueryRunner,
-        @inject(QueryRunnerContext) private readonly _qrContext: QueryRunnerContext
-    ) {}
-
     public async execute(req: any, res: any, next: any) {
-        await this._qr.connect();
-        await this._qr.startTransaction();
-        this._qrContext.setQueryRunner(this._qr);
-        req.queryRunner = this._qr;
+        const qr = AppDataSource.createQueryRunner();
+        await qr.connect();
+        await qr.startTransaction();
 
-        res.on("finish", async () => {
-            try {
-                if (res.statusCode < 400) {
-                    await this._qr.commitTransaction();
-                } else {
-                    if (this._qr.isTransactionActive) await this._qr.rollbackTransaction();
+        // On enveloppe TOUTE la suite de la requête dans le store
+        transactionStorage.run(qr, () => {
+            res.on("finish", async () => {
+                try {
+                    if (res.statusCode < 400) {
+                        if (qr.isTransactionActive) await qr.commitTransaction();
+                    } else {
+                        if (qr.isTransactionActive) await qr.rollbackTransaction();
+                    }
+                } finally {
+                    if (!qr.isReleased) await qr.release();
                 }
-            } finally {
-                this._qrContext.clear();
-                if (!this._qr.isReleased) await this._qr.release();
-            }
+            });
+            next();
         });
-        next();
     }
 }

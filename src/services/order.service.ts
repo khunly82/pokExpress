@@ -24,6 +24,7 @@ export class OrderService extends BaseService<OrderEntity> {
     }
 
     async create(order: OrderCreateDto) {
+        await new Promise(resolve => setTimeout(resolve, 10000));
         const created = await this.repository.create({
             date: new Date()
         });
