@@ -1,0 +1,31 @@
+{
+  "name": "pokexpress",
+  "version": "1.0.0",
+  "description": "Poc Transaction",
+  "license": "ISC",
+  "author": "Khun LY",
+  "type": "module",
+  "main": "src/main.ts",
+  "scripts": {
+    "dev": "tsx --env-file-if-exists=.env .",
+    "build": "tsc",
+    "start": "node --env-file-if-exists=.env.production dist/index.js"
+  },
+  "dependencies": {
+    "-": "^0.0.1",
+    "@inversifyjs/http-core": "^4.10.2",
+    "@inversifyjs/http-express": "^4.10.2",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "inversify": "^7.11.0",
+    "pg": "^8.19.0",
+    "typeorm": "^0.3.28"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/pg": "^8.18.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
